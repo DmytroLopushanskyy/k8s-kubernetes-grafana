@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f compose.yaml --volumes hostPath
+    kompose.version: 1.26.1 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: prometheus
+  name: prometheus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: prometheus
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.service: prometheus
+    spec:
+      securityContext:
+        fsGroup: 65534
+      containers:
+        - args:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+          image: prom/prometheus
+          name: prometheus
+          ports:
+            - containerPort: 9090
+          resources: {}
+          securityContext:
+            runAsGroup: 0
+            runAsNonRoot: false
+            runAsUser: 0
+          volumeMounts:
+            - mountPath: /etc/prometheus
+              name: prometheus-hostpath-0
+      restartPolicy: Always
+      volumes:
+        - name: prometheus-hostpath-0
+          hostPath:
+            path: /prometheus-grafana/prometheus
+status: {}
